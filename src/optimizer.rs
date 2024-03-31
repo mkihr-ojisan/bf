@@ -98,8 +98,10 @@ fn do_calculate_loop(instructions: &[Instruction]) -> (Vec<Instruction>, bool) {
                             if simulation_result.memory[MEMORY_OFFSET] == 1
                                 || simulation_result.memory[MEMORY_OFFSET] == 255
                             {
+                                let mut optimized_loop = Vec::new();
+
                                 if simulation_result.memory[MEMORY_OFFSET] == 1 {
-                                    optimized.push(Instruction::Negate);
+                                    optimized_loop.push(Instruction::Negate);
                                 }
 
                                 let mut offset = 0isize;
@@ -107,43 +109,47 @@ fn do_calculate_loop(instructions: &[Instruction]) -> (Vec<Instruction>, bool) {
                                     match inst {
                                         Instruction::Increment => {
                                             if offset != 0 {
-                                                optimized.push(Instruction::AddValueAt(-offset));
+                                                optimized_loop
+                                                    .push(Instruction::AddValueAt(-offset));
                                             }
                                         }
                                         Instruction::Decrement => {
                                             if offset != 0 {
-                                                optimized
+                                                optimized_loop
                                                     .push(Instruction::SubtractValueAt(-offset));
                                             }
                                         }
                                         Instruction::PointerIncrement => {
                                             offset += 1;
-                                            optimized.push(Instruction::PointerIncrement);
+                                            optimized_loop.push(Instruction::PointerIncrement);
                                         }
                                         Instruction::PointerDecrement => {
                                             offset -= 1;
-                                            optimized.push(Instruction::PointerDecrement);
+                                            optimized_loop.push(Instruction::PointerDecrement);
                                         }
                                         Instruction::Add(value) => {
-                                            optimized.push(Instruction::AddValueMultipliedBy(
+                                            optimized_loop.push(Instruction::AddValueMultipliedBy(
                                                 value, -offset,
                                             ));
                                         }
                                         Instruction::Subtract(value) => {
-                                            optimized.push(Instruction::SubtractValueMultipliedBy(
-                                                value, -offset,
-                                            ));
+                                            optimized_loop.push(
+                                                Instruction::SubtractValueMultipliedBy(
+                                                    value, -offset,
+                                                ),
+                                            );
                                         }
                                         Instruction::SetZero => {
-                                            optimized.push(Instruction::SetZero);
+                                            optimized_loop.push(Instruction::SetZero);
                                         }
                                         Instruction::PointerAdd(value) => {
                                             offset += value as isize;
-                                            optimized.push(Instruction::PointerAdd(value));
+                                            optimized_loop.push(Instruction::PointerAdd(value));
                                         }
                                         Instruction::PointerSubtract(value) => {
                                             offset -= value as isize;
-                                            optimized.push(Instruction::PointerSubtract(value));
+                                            optimized_loop
+                                                .push(Instruction::PointerSubtract(value));
                                         }
 
                                         Instruction::PutChar
@@ -153,12 +159,15 @@ fn do_calculate_loop(instructions: &[Instruction]) -> (Vec<Instruction>, bool) {
                                         | Instruction::SubtractValueAt(_)
                                         | Instruction::AddValueMultipliedBy(_, _)
                                         | Instruction::SubtractValueMultipliedBy(_, _)
-                                        | Instruction::Negate => {
+                                        | Instruction::Negate
+                                        | Instruction::IfNotZero(_) => {
                                             unreachable!()
                                         }
                                     }
                                 }
-                                optimized.push(Instruction::SetZero);
+                                optimized_loop.push(Instruction::SetZero);
+
+                                optimized.push(Instruction::IfNotZero(optimized_loop));
                             } else {
                                 optimized.push(Instruction::Loop(loop_instructions));
                             }
@@ -238,7 +247,8 @@ fn simulate(instructions: &[Instruction]) -> Option<SimulationResult> {
             | Instruction::SubtractValueAt(_)
             | Instruction::AddValueMultipliedBy(_, _)
             | Instruction::SubtractValueMultipliedBy(_, _)
-            | Instruction::Negate => {
+            | Instruction::Negate
+            | Instruction::IfNotZero(_) => {
                 return None;
             }
         }

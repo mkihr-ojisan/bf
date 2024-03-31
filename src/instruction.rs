@@ -18,4 +18,5 @@ pub enum Instruction {
     AddValueMultipliedBy(u8, isize),
     SubtractValueMultipliedBy(u8, isize),
     Negate,
+    IfNotZero(Vec<Instruction>),
 }

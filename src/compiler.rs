@@ -40,6 +40,13 @@ fn do_compile(instructions: &[Instruction], offset: usize) -> Vec<VMInstruction>
                 VMInstruction::SubtractValueMultipliedBy(*multiplier, *offset),
             ),
             Instruction::Negate => compiled.push(VMInstruction::Negate),
+            Instruction::IfNotZero(if_instructions) => {
+                let start = compiled.len();
+                compiled.push(VMInstruction::JumpIfZero(0));
+                compiled.extend(do_compile(if_instructions, start + offset + 1));
+                let end = compiled.len() - 1;
+                compiled[start] = VMInstruction::JumpIfZero(end + offset);
+            }
         }
     }
 
