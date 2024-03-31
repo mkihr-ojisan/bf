@@ -39,7 +39,7 @@ fn main() -> anyhow::Result<()> {
     }
 
     let compiled = compiler::compile(&optimized);
-    vm::run(&compiled);
+    vm::run(&compiled, args.trace);
 
     Ok(())
 }

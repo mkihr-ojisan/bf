@@ -24,15 +24,21 @@ pub enum VMInstruction {
     Negate,
 }
 
-pub fn run(instructions: &[VMInstruction]) {
-    let mut memory = vec![0u8; 1024 * 1024 * 1024];
+pub fn run(instructions: &[VMInstruction], trace: bool) {
+    let mut memory = vec![0u8; 30000];
     let mut pointer = 0;
     let mut instruction_pointer = 0;
     while instruction_pointer < instructions.len() {
-        // println!(
-        //     "ip: {}, inst: {:?}, ptr: {}, mem: {}",
-        //     instruction_pointer, instructions[instruction_pointer], pointer, memory[pointer]
-        // );
+        if trace {
+            println!(
+                "ip: {}, inst: {:?}, ptr: {}, mem: {}\n{:?}",
+                instruction_pointer,
+                instructions[instruction_pointer],
+                pointer,
+                memory[pointer],
+                &memory[0..30]
+            );
+        }
         match instructions[instruction_pointer] {
             VMInstruction::Increment => {
                 memory[pointer] = memory[pointer].wrapping_add(1);
