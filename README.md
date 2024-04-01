@@ -19,10 +19,10 @@ $ target/release/bf -O2 --native-compile <bf source file>
 さらに、ループの始めと終わりでポインタが同じ位置にあり、その位置の値が1変化すること。
 
 #### 例
-- `[-]` → `Set(0)`
-- `[->+<]` → `IfNotZero { PointerIncrement, AddValueAt(-1), PointerDecrement, Set(0) }`
-- `[->++<]` → `IfNotZero { PointerIncrement, AddValueMultipliedBy(2, -1), PointerDecrement, Set(0) }`
-- `[+>+<]` → `IfNotZero { Negate, PointerIncrement, AddValueAt(-1), PointerDecrement, Set(0) }`
+- `[-]` → `SetZero`
+- `[->+<]` → `IfNotZero { PointerIncrement, AddValueAt(-1), PointerDecrement, SetZero }`
+- `[->++<]` → `IfNotZero { PointerIncrement, AddValueMultipliedBy(2, -1), PointerDecrement, SetZero }`
+- `[+>+<]` → `IfNotZero { Negate, PointerIncrement, AddValueAt(-1), PointerDecrement, SetZero }`
 
 ほとんど速くならない。
 
