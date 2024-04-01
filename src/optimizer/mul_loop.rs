@@ -1,83 +1,14 @@
 use crate::instruction::Instruction;
 
-pub fn optimize(instructions: &[Instruction], optimize_level: i64) -> Vec<Instruction> {
-    match optimize_level {
-        0 => instructions.to_vec(),
-        1 => pattern_match(instructions),
-        2 => calculate_loop(&pattern_match(instructions)),
-        _ => panic!("Invalid optimize level: {}", optimize_level),
-    }
-}
-
-fn pattern_match(instructions: &[Instruction]) -> Vec<Instruction> {
-    let mut i = 0;
-    let mut optimized = Vec::new();
-    while i < instructions.len() {
-        let inst = &instructions[i];
-        match inst {
-            // 連続するIncrementをAddに変換
-            Instruction::Increment if instructions.get(i + 1) == Some(&Instruction::Increment) => {
-                let mut count = 1;
-                while instructions.get(i + 1) == Some(&Instruction::Increment) {
-                    count += 1;
-                    i += 1;
-                }
-                optimized.push(Instruction::Add(count));
-            }
-            // 連続するDecrementをSubtractに変換
-            Instruction::Decrement if instructions.get(i + 1) == Some(&Instruction::Decrement) => {
-                let mut count = 1;
-                while instructions.get(i + 1) == Some(&Instruction::Decrement) {
-                    count += 1;
-                    i += 1;
-                }
-                optimized.push(Instruction::Subtract(count));
-            }
-            // 連続するPointerIncrementをPointerAddに変換
-            Instruction::PointerIncrement
-                if instructions.get(i + 1) == Some(&Instruction::PointerIncrement) =>
-            {
-                let mut count = 1;
-                while instructions.get(i + 1) == Some(&Instruction::PointerIncrement) {
-                    count += 1;
-                    i += 1;
-                }
-                optimized.push(Instruction::PointerAdd(count));
-            }
-            // 連続するPointerDecrementをPointerSubtractに変換
-            Instruction::PointerDecrement
-                if instructions.get(i + 1) == Some(&Instruction::PointerDecrement) =>
-            {
-                let mut count = 1;
-                while instructions.get(i + 1) == Some(&Instruction::PointerDecrement) {
-                    count += 1;
-                    i += 1;
-                }
-                optimized.push(Instruction::PointerSubtract(count));
-            }
-            // ループの中身を最適化
-            Instruction::Loop(loop_instructions) => {
-                let optimized_loop = pattern_match(loop_instructions);
-                optimized.push(Instruction::Loop(optimized_loop));
-            }
-            inst => optimized.push(inst.clone()),
-        }
-
-        i += 1;
-    }
-
-    optimized
-}
-
 const MEMORY_SIZE: usize = 1024;
 const MEMORY_OFFSET: usize = MEMORY_SIZE / 2;
 
-fn calculate_loop(instructions: &[Instruction]) -> Vec<Instruction> {
-    let (optimized, _) = do_calculate_loop(instructions);
+pub fn optimize_mul_loop(instructions: &[Instruction]) -> Vec<Instruction> {
+    let (optimized, _) = do_optimize_mul_loop(instructions);
     optimized
 }
 
-fn do_calculate_loop(instructions: &[Instruction]) -> (Vec<Instruction>, bool) {
+fn do_optimize_mul_loop(instructions: &[Instruction]) -> (Vec<Instruction>, bool) {
     let mut optimized = Vec::new();
     let mut can_be_calculated = true;
     for inst in instructions {
@@ -90,7 +21,7 @@ fn do_calculate_loop(instructions: &[Instruction]) -> (Vec<Instruction>, bool) {
                 can_be_calculated = false;
 
                 let (loop_instructions, loop_can_be_calculated) =
-                    do_calculate_loop(loop_instructions);
+                    do_optimize_mul_loop(loop_instructions);
 
                 if loop_can_be_calculated {
                     if let Some(simulation_result) = simulate(&loop_instructions) {

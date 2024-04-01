@@ -2,66 +2,54 @@ use super::QwordRegister;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AddressingMode {
-    // [rax]
-    Indirect {
-        reg: QwordRegister,
-    },
-    // [rip + 0x12345678]
-    RipDisplacement32 {
-        disp: i32,
-    },
-    // [rax + 0x12]
-    IndirectDisplacement8 {
-        base: QwordRegister,
-        disp: i8,
-    },
-    // [rax + 0x12345678]
-    IndirectDisplacement32 {
-        base: QwordRegister,
-        disp: i32,
-    },
-    // [rax + rcx * 2]
+    /// [rax]
+    Indirect { reg: QwordRegister },
+    /// [rip + 0x12345678]
+    RipDisplacement32 { disp: i32 },
+    /// [rax + 0x12]
+    IndirectDisplacement8 { base: QwordRegister, disp: i8 },
+    /// [rax + 0x12345678]
+    IndirectDisplacement32 { base: QwordRegister, disp: i32 },
+    /// [rax + rcx * 2]
     IndirectScaled {
         base: QwordRegister,
         index: Option<QwordRegister>,
         scale: AddressingScale,
     },
-    // [rax + rcx * 2 + 0x12]
+    /// [rax + rcx * 2 + 0x12]
     IndirectScaledDisplacement8 {
         base: QwordRegister,
         index: Option<QwordRegister>,
         scale: AddressingScale,
         disp: i8,
     },
-    // [rax + rcx * 2 + 0x12345678]
+    /// [rax + rcx * 2 + 0x12345678]
     IndirectScaledDisplacement32 {
         base: QwordRegister,
         index: Option<QwordRegister>,
         scale: AddressingScale,
         disp: i32,
     },
-    // [rax * 2 + 0x12345678]
+    /// [rax * 2 + 0x12345678]
     IndirectScaledBaseDisplacement32 {
         index: Option<QwordRegister>,
         scale: AddressingScale,
         disp: i32,
     },
-    // [rax * 2 + 0x12 + rbp]
+    /// [rax * 2 + 0x12 + rbp]
     IndirectScaledBaseDisplacement8Rbp {
         index: Option<QwordRegister>,
         scale: AddressingScale,
         disp: i8,
     },
-    // [rax * 2 + 0x12345678 + rbp]
+    /// [rax * 2 + 0x12345678 + rbp]
     IndirectScaledBaseDisplacement32Rbp {
         index: Option<QwordRegister>,
         scale: AddressingScale,
         disp: i32,
     },
-    // rax
-    Register {
-        reg: QwordRegister,
-    },
+    /// rax
+    Register { reg: QwordRegister },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
