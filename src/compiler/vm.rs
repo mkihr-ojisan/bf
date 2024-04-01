@@ -1,4 +1,4 @@
-use crate::{instruction::Instruction, vm::VMInstruction};
+use crate::{instruction::Instruction, runtime::vm::VMInstruction};
 
 pub fn compile(instructions: &[Instruction]) -> Vec<VMInstruction> {
     do_compile(instructions, 0)

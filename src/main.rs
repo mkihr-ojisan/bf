@@ -2,21 +2,23 @@ use std::io::Read;
 
 use clap::Parser;
 
-//mod assembler;
+mod assembler;
 mod compiler;
 mod instruction;
 mod optimizer;
 mod parser;
-mod vm;
+mod runtime;
 
 #[derive(Parser)]
 struct Args {
-    #[clap(short = 'O', long, default_value = "0", value_parser = 0..=2)]
+    #[clap(short = 'O', long, default_value = "2", value_parser = 0..=2)]
     optimize_level: i64,
     #[clap(long)]
     print_optimized: bool,
     #[clap(long)]
     trace: bool,
+    #[clap(long, default_value = "true")]
+    native_compile: bool,
     filename: Option<String>,
 }
 
@@ -38,8 +40,13 @@ fn main() -> anyhow::Result<()> {
         dbg!(&optimized);
     }
 
-    let compiled = compiler::compile(&optimized);
-    vm::run(&compiled, args.trace);
+    if args.native_compile {
+        let compiled = compiler::x86_64::compile(&optimized);
+        runtime::native::run(&compiled);
+    } else {
+        let compiled = compiler::vm::compile(&optimized);
+        runtime::vm::run(&compiled, args.trace);
+    }
 
     Ok(())
 }
