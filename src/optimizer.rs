@@ -167,7 +167,12 @@ fn do_calculate_loop(instructions: &[Instruction]) -> (Vec<Instruction>, bool) {
                                 }
                                 optimized_loop.push(Instruction::SetZero);
 
-                                optimized.push(Instruction::IfNotZero(optimized_loop));
+                                if optimized_loop.is_empty() {
+                                    optimized.push(Instruction::SetZero);
+                                } else {
+                                    optimized_loop.push(Instruction::SetZero);
+                                    optimized.push(Instruction::IfNotZero(optimized_loop));
+                                }
                             } else {
                                 optimized.push(Instruction::Loop(loop_instructions));
                             }
