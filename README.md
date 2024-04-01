@@ -8,11 +8,11 @@ $ cargo build --release
 
 ### 実行
 ```console
-$ target/release/bf -O2 --native-compile <bf source file>
+$ target/release/bf -oall --native-codegen <bf source file>
 ```
 
 ## どういった最適化をしているの？
-### 連続した`+-><`をまとめる
+### 連続した`+`,`-`,`>`,`<`をまとめる
 例えば`+++++`は中間表現で`Add(5)`に変換される。
 ### 値のコピーや乗算のためのループを展開(?)する
 最適化する条件は、ループ内にループとI/O命令がないこと。
@@ -28,7 +28,7 @@ $ target/release/bf -O2 --native-compile <bf source file>
 
 
 ## ネイティブコードの生成
-`--native-compile`オプションをつけると、オレオレアセンブラを使ってx86_64の機械語を生成する。LLVMは甘え
+`--native-codegen`オプションをつけると、オレオレアセンブラを使ってx86_64の機械語を生成する。LLVMは甘え
 
-add命令などのオペランドに直接メモリを指定しているのでたぶん遅い。
+オペランドに直接メモリを指定しているのでたぶん遅い。
 レジスタを使っていい感じにしたい。
