@@ -13,5 +13,6 @@ pub fn run(code: &[u8]) {
         std::ptr::copy_nonoverlapping(code.as_ptr(), executable_code as *mut u8, code.len());
         let f: extern "C" fn(memory: *mut u8) = std::mem::transmute(executable_code);
         f(memory.as_ptr() as *mut u8);
+        libc::munmap(executable_code, code.len());
     };
 }
