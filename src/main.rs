@@ -47,7 +47,7 @@ fn main() -> anyhow::Result<()> {
     }
 
     if args.native_codegen {
-        let compiled = compiler::x86_64::compile(&optimized);
+        let compiled = compiler::x86_64::compile(&optimized, Default::default());
         runtime::native::run(&compiled);
     } else {
         let compiled = compiler::vm::compile(&optimized);

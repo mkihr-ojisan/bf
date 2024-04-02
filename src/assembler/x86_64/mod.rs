@@ -432,3 +432,9 @@ impl Assembler {
         self.code.extend(rm8.displacement32().iter().flatten());
     }
 }
+
+impl Default for Assembler {
+    fn default() -> Self {
+        Self::new()
+    }
+}

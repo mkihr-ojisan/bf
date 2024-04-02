@@ -7,3 +7,10 @@ edition = "2021"
 anyhow = "1.0.81"
 clap = { version = "4.5.4", features = ["derive"] }
 libc = "0.2.153"
+
+[dev-dependencies]
+criterion = { version = "0.5.1", features = ["html_reports"] }
+
+[[bench]]
+name = "benchmark"
+harness = false

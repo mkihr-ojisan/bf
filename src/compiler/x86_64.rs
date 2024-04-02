@@ -10,7 +10,13 @@ extern "C" {
 
 const POINTER_REGISTER: QwordRegister = QwordRegister::Rdx; // arg1
 
-pub fn compile(instructions: &[Instruction]) -> Vec<u8> {
+#[derive(Default)]
+pub struct CompileOptions {
+    pub putchar: Option<unsafe extern "C" fn(i32)>,
+    pub getchar: Option<unsafe extern "C" fn() -> i32>,
+}
+
+pub fn compile(instructions: &[Instruction], options: CompileOptions) -> Vec<u8> {
     let mut assembler = Assembler::new();
 
     assembler.push_r64(QwordRegister::Rbp);
@@ -29,7 +35,7 @@ pub fn compile(instructions: &[Instruction]) -> Vec<u8> {
         QwordRegister::Rdi,
     );
 
-    do_compile(instructions, &mut assembler);
+    do_compile(instructions, &mut assembler, &options);
 
     assembler.pop_r64(QwordRegister::Rbp);
     assembler.ret();
@@ -37,7 +43,7 @@ pub fn compile(instructions: &[Instruction]) -> Vec<u8> {
     assembler.code
 }
 
-fn do_compile(instructions: &[Instruction], assembler: &mut Assembler) {
+fn do_compile(instructions: &[Instruction], assembler: &mut Assembler, options: &CompileOptions) {
     for inst in instructions {
         match inst {
             Instruction::Increment => {
@@ -74,7 +80,10 @@ fn do_compile(instructions: &[Instruction], assembler: &mut Assembler) {
                     },
                 );
 
-                assembler.mov_r64_imm64(QwordRegister::Rax, putchar as usize as u64);
+                assembler.mov_r64_imm64(
+                    QwordRegister::Rax,
+                    options.putchar.unwrap_or(putchar) as usize as u64,
+                );
 
                 assembler.push_r64(POINTER_REGISTER);
                 assembler.call_rm64(AddressingMode::Register {
@@ -83,7 +92,10 @@ fn do_compile(instructions: &[Instruction], assembler: &mut Assembler) {
                 assembler.pop_r64(POINTER_REGISTER);
             }
             Instruction::GetChar => {
-                assembler.mov_r64_imm64(QwordRegister::Rax, getchar as usize as u64);
+                assembler.mov_r64_imm64(
+                    QwordRegister::Rax,
+                    options.getchar.unwrap_or(getchar) as usize as u64,
+                );
 
                 assembler.push_r64(POINTER_REGISTER);
                 assembler.call_rm64(AddressingMode::Register {
@@ -110,7 +122,7 @@ fn do_compile(instructions: &[Instruction], assembler: &mut Assembler) {
                 assembler.je_rel32(0);
 
                 let start = assembler.code.len();
-                do_compile(loop_instructions, assembler);
+                do_compile(loop_instructions, assembler, options);
 
                 assembler.cmp_rm8_imm8(
                     AddressingMode::Indirect {
@@ -272,7 +284,7 @@ fn do_compile(instructions: &[Instruction], assembler: &mut Assembler) {
                 let jump = assembler.code.len();
                 assembler.je_rel32(0);
 
-                do_compile(if_instructions, assembler);
+                do_compile(if_instructions, assembler, options);
 
                 let end = assembler.code.len();
 
